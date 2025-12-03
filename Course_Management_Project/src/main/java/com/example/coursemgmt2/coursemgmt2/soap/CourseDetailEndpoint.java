@@ -31,6 +31,11 @@ public class CourseDetailEndpoint {
 
 
         Course course=Service.getCoursebyID(request.getId());
+        if(course==null){
+//            throw new RuntimeException("course not found with id :"+ request.getId());
+            throw  new CourseNotFoundException("course not found with id :"+ request.getId());
+        }
+
         CourseDetails courseDetails = new CourseDetails();
         courseDetails.setId(course.getId());
         courseDetails.setName(course.getName());

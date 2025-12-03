@@ -46,4 +46,10 @@ public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema xsdSchema) {
     XsdSchema courseSchema() {
         return new SimpleXsdSchema(new ClassPathResource("xsd/courseDetail.xsd"));
     }
+
+
+//    security
+//    interceptor
+
+
 }
