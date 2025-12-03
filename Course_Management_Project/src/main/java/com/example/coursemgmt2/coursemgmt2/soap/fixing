@@ -1,0 +1,96 @@
+Ah, I see what you want: a **common `mapCourse` method** to avoid repeating the mapping logic in every endpoint. This is a good idea—it keeps your code DRY (Don’t Repeat Yourself). You can create a **utility method** that converts your internal `Course` object to the JAXB-generated `CourseDetails`.
+
+Here’s how you can do it:
+
+---
+
+### 1️⃣ Add a `mapCourse` method
+
+You can put it **inside the endpoint class** or, better, in a **common utility class** if you want to reuse it in other endpoints.
+
+**Option 1: Inside the endpoint class**
+
+```java
+private CourseDetails mapCourse(Course course) {
+    CourseDetails courseDetails = new CourseDetails();
+    courseDetails.setId(course.getId());
+    courseDetails.setName(course.getName());
+    courseDetails.setDescription(course.getDescription());
+    return courseDetails;
+}
+```
+
+**Then you can rewrite your methods like this:**
+
+```java
+@PayloadRoot(namespace="http://example.com/courses", localPart="GetCourseDetailRequest")
+@ResponsePayload
+public GetCourseDetailResponse getCourseDetail(@RequestPayload GetCourseDetailRequest request) {
+    GetCourseDetailResponse response = new GetCourseDetailResponse();
+
+    Course course = Service.getCoursebyID(request.getId());
+    if (course != null) {
+        response.setCourseDetails(mapCourse(course));
+    }
+
+    return response;
+}
+
+@PayloadRoot(namespace="http://example.com/courses", localPart="GetAllCourseDetailRequest")
+@ResponsePayload
+public GetAllCourseDetailResponse getAllCourseDetail(@RequestPayload GetAllCourseDetailRequest request) {
+    GetAllCourseDetailResponse response = new GetAllCourseDetailResponse();
+
+    List<Course> coursesList = Service.getCourses();
+    for (Course c : coursesList) {
+        response.getCourseDetails().add(mapCourse(c));
+    }
+
+    return response;
+}
+```
+
+---
+
+### 2️⃣ Option 2: Common utility class
+
+Create a **separate helper class** (recommended if multiple endpoints need mapping):
+
+```java
+package com.example.coursemgmt2.utils;
+
+import courses.Course;
+import com.example.coursemgmt2.coursemgmt2.soap.CourseDetails;
+
+public class CourseMapper {
+    public static CourseDetails mapCourse(Course course) {
+        CourseDetails details = new CourseDetails();
+        details.setId(course.getId());
+        details.setName(course.getName());
+        details.setDescription(course.getDescription());
+        return details;
+    }
+}
+```
+
+Then in your endpoint:
+
+```java
+import com.example.coursemgmt2.utils.CourseMapper;
+
+response.setCourseDetails(CourseMapper.mapCourse(course));
+```
+
+---
+
+✅ **Benefits of using `mapCourse`:**
+
+1. Avoids repeating the mapping logic in multiple methods.
+2. Centralizes mapping logic (easy to update later).
+3. Cleaner and more readable endpoint code.
+
+---
+
+If you want, I can **rewrite your full `CourseDetailEndpoint` using this `mapCourse` method** and also add a **delete-by-ID SOAP endpoint**, so your endpoint is fully ready.
+
+Do you want me to do that?
